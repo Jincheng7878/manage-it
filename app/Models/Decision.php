@@ -12,12 +12,25 @@ class Decision extends Model
     protected $fillable = [
         'scenario_id',
         'user_id',
+
+        // core decision fields
         'strategy',
         'time_alloc',
         'cost_alloc',
         'risk_level',
         'notes',
-        'file_path',    // ← NEW: uploaded file path
+
+        // file upload (student attachment)
+        'file_path',
+
+        // structured decision modelling fields
+        'swot_strengths',
+        'swot_weaknesses',
+        'swot_opportunities',
+        'swot_threats',
+        'wbs',
+        'risk_matrix',
+        'cost_breakdown',
     ];
 
     public function scenario()

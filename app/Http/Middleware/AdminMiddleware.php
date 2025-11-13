@@ -4,17 +4,19 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // 用户必须已登录且角色为 admin
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Only admin can access this page.');
+        $user = $request->user();
+
+        if (!$user || $user->role !== 'admin') {
+            abort(403, 'Only admin users can access this area.');
         }
 
         return $next($request);

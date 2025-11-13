@@ -26,7 +26,8 @@
         <div class="mb-4">
             <label class="block text-sm font-medium">Description</label>
             <textarea name="description"
-                      class="mt-1 block w-full border rounded p-2">{{ old('description', $scenario->description) }}</textarea>
+                      class="mt-1 block w-full border rounded p-2"
+            >{{ old('description', $scenario->description) }}</textarea>
         </div>
 
         <!-- Budget / Duration / Difficulty -->
@@ -61,25 +62,71 @@
 
         </div>
 
-        <!-- File Upload -->
+        <!-- Status + Deadline -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium">Status</label>
+                <select name="status" class="mt-1 block w-full border rounded p-2">
+                    <option value="open"   @selected(old('status', $scenario->status ?? 'open') === 'open')>Open</option>
+                    <option value="closed" @selected(old('status', $scenario->status ?? 'open') === 'closed')>Closed</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                    If closed, students cannot submit new decisions.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Deadline (optional)</label>
+                <input type="datetime-local"
+                       name="deadline"
+                       value="{{ old('deadline', optional($scenario->deadline)->format('Y-m-d\TH:i')) }}"
+                       class="mt-1 block w-full border rounded p-2">
+                <p class="text-xs text-gray-500 mt-1">
+                    After this date/time, submissions will be blocked automatically.
+                </p>
+            </div>
+        </div>
+
+        <!-- Image Upload -->
         <div class="mb-4">
-            <label class="block text-sm font-medium">Upload New File (optional)</label>
-            <input type="file" name="file"
+            <label class="block text-sm font-medium">Scenario Image (optional)</label>
+            <input type="file"
+                   name="image"
                    class="mt-1 block w-full border rounded p-2">
-            @error('file')
+            @if($scenario->image_path)
+                <p class="text-xs text-gray-500 mt-1">
+                    Current image:
+                    <a href="{{ asset('storage/' . $scenario->image_path) }}"
+                       target="_blank"
+                       class="underline text-indigo-600">
+                        View
+                    </a>
+                </p>
+            @endif
+            @error('image')
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
+        </div>
 
+        <!-- File Upload -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium">Attachment File (optional)</label>
+            <input type="file"
+                   name="file"
+                   class="mt-1 block w-full border rounded p-2">
             @if($scenario->file_path)
-                <p class="text-sm mt-2">
-                    Current File:
+                <p class="text-xs text-gray-500 mt-1">
+                    Current file:
                     <a href="{{ asset('storage/' . $scenario->file_path) }}"
-                       class="text-blue-600 underline"
-                       target="_blank">
+                       target="_blank"
+                       class="underline text-indigo-600">
                         Download
                     </a>
                 </p>
             @endif
+            @error('file')
+                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+            @enderror
         </div>
 
         <!-- Buttons -->

@@ -20,9 +20,7 @@ class ScenarioController extends Controller
 
     public function create()
     {
-        // Use Policy to check if user can create
         $this->authorize('create', Scenario::class);
-
         return view('scenarios.create');
     }
 
@@ -36,20 +34,32 @@ class ScenarioController extends Controller
             'budget'      => 'required|integer|min:0',
             'duration'    => 'required|integer|min:1',
             'difficulty'  => 'required|in:easy,medium,hard',
-            // file upload (teacher can attach scenario file)
-            'file'        => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,ppt,pptx|max:20480',
+
+            // new fields
+            'status'      => 'required|in:open,closed',
+            'deadline'    => 'nullable|date',
+
+            // teacher uploads
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:20480',
+            'file'        => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,jpg,jpeg,png|max:20480',
         ]);
 
-        // handle file upload
+        $validated['created_by'] = auth()->id();
+
+        // handle image upload
+        if ($request->hasFile('image')) {
+            $validated['image_path'] = $request->file('image')->store('scenario_images', 'public');
+        }
+
+        // handle attachment upload
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store('scenario_files', 'public');
         }
 
-        $validated['created_by'] = auth()->id();
-
         Scenario::create($validated);
 
-        return redirect()->route('scenarios.index')
+        return redirect()
+            ->route('scenarios.index')
             ->with('success', 'Scenario created successfully.');
     }
 
@@ -65,7 +75,6 @@ class ScenarioController extends Controller
 
     public function edit(Scenario $scenario)
     {
-        // Use ScenarioPolicy@update
         $this->authorize('update', $scenario);
 
         return view('scenarios.edit', compact('scenario'));
@@ -81,28 +90,41 @@ class ScenarioController extends Controller
             'budget'      => 'required|integer|min:0',
             'duration'    => 'required|integer|min:1',
             'difficulty'  => 'required|in:easy,medium,hard',
-            // optional new file
-            'file'        => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,ppt,pptx|max:20480',
+
+            // new fields
+            'status'      => 'required|in:open,closed',
+            'deadline'    => 'nullable|date',
+
+            // teacher uploads
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:20480',
+            'file'        => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,jpg,jpeg,png|max:20480',
         ]);
 
+        // image overwrite (if new uploaded)
+        if ($request->hasFile('image')) {
+            $validated['image_path'] = $request->file('image')->store('scenario_images', 'public');
+        }
+
+        // file overwrite
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store('scenario_files', 'public');
         }
 
         $scenario->update($validated);
 
-        return redirect()->route('scenarios.show', $scenario)
+        return redirect()
+            ->route('scenarios.show', $scenario)
             ->with('success', 'Scenario updated.');
     }
 
     public function destroy(Scenario $scenario)
     {
-        // Use ScenarioPolicy@delete
         $this->authorize('delete', $scenario);
 
         $scenario->delete();
 
-        return redirect()->route('scenarios.index')
+        return redirect()
+            ->route('scenarios.index')
             ->with('success', 'Scenario deleted.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Scenario extends Model
 {
@@ -17,11 +18,19 @@ class Scenario extends Model
         'difficulty',
         'initial_metrics',
         'created_by',
-        'file_path',      // ← NEW: uploaded file path
+
+        // teacher uploads
+        'image_path',
+        'file_path',
+
+        // open / closed + deadline
+        'status',
+        'deadline',
     ];
 
     protected $casts = [
         'initial_metrics' => 'array',
+        'deadline'        => 'datetime',
     ];
 
     public function creator()
@@ -32,5 +41,23 @@ class Scenario extends Model
     public function decisions()
     {
         return $this->hasMany(Decision::class);
+    }
+
+    /**
+     * Is this scenario open for student submissions?
+     */
+    public function isOpenForSubmission(): bool
+    {
+        // hard closed
+        if ($this->status === 'closed') {
+            return false;
+        }
+
+        // deadline passed
+        if ($this->deadline instanceof Carbon && now()->greaterThan($this->deadline)) {
+            return false;
+        }
+
+        return true;
     }
 }
