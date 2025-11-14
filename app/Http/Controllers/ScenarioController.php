@@ -24,6 +24,31 @@ class ScenarioController extends Controller
         return view('scenarios.create');
     }
 
+    /**
+     * Convert any YouTube URL to embed format
+     */
+    private function convertYoutubeUrl($url)
+    {
+        if (!$url) return null;
+
+        // full link e.g. https://www.youtube.com/watch?v=abcd
+        if (preg_match('/youtube\.com\/watch\?v=([^&]+)/', $url, $m)) {
+            return "https://www.youtube-nocookie.com/embed/" . $m[1];
+        }
+
+        // short link e.g. https://youtu.be/abcd
+        if (preg_match('/youtu\.be\/([^?]+)/', $url, $m)) {
+            return "https://www.youtube-nocookie.com/embed/" . $m[1];
+        }
+
+        // already embed
+        if (preg_match('/youtube\.com\/embed\/([^?]+)/', $url)) {
+            return $url;
+        }
+
+        return $url;
+    }
+
     public function store(Request $request)
     {
         $this->authorize('create', Scenario::class);
@@ -35,25 +60,37 @@ class ScenarioController extends Controller
             'duration'    => 'required|integer|min:1',
             'difficulty'  => 'required|in:easy,medium,hard',
 
-            // new fields
             'status'      => 'required|in:open,closed',
             'deadline'    => 'nullable|date',
 
-            // teacher uploads
             'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:20480',
             'file'        => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,jpg,jpeg,png|max:20480',
+
+            // ⭐ Video (max 2MB)
+            'video'       => 'nullable|file|mimes:mp4,webm,ogg|max:2048',
+            'video_url'   => 'nullable|url',
         ]);
 
         $validated['created_by'] = auth()->id();
 
-        // handle image upload
+        // Image upload
         if ($request->hasFile('image')) {
             $validated['image_path'] = $request->file('image')->store('scenario_images', 'public');
         }
 
-        // handle attachment upload
+        // Attachment upload
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store('scenario_files', 'public');
+        }
+
+        // ⭐ Video file upload
+        if ($request->hasFile('video')) {
+            $validated['video_path'] = $request->file('video')->store('scenario_videos', 'public');
+        }
+
+        // ⭐ YouTube URL convert
+        if ($request->filled('video_url')) {
+            $validated['video_url'] = $this->convertYoutubeUrl($request->video_url);
         }
 
         Scenario::create($validated);
@@ -76,7 +113,6 @@ class ScenarioController extends Controller
     public function edit(Scenario $scenario)
     {
         $this->authorize('update', $scenario);
-
         return view('scenarios.edit', compact('scenario'));
     }
 
@@ -91,23 +127,34 @@ class ScenarioController extends Controller
             'duration'    => 'required|integer|min:1',
             'difficulty'  => 'required|in:easy,medium,hard',
 
-            // new fields
             'status'      => 'required|in:open,closed',
             'deadline'    => 'nullable|date',
 
-            // teacher uploads
             'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:20480',
             'file'        => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,jpg,jpeg,png|max:20480',
+
+            'video'       => 'nullable|file|mimes:mp4,webm,ogg|max:2048',
+            'video_url'   => 'nullable|url',
         ]);
 
-        // image overwrite (if new uploaded)
+        // Image replace
         if ($request->hasFile('image')) {
             $validated['image_path'] = $request->file('image')->store('scenario_images', 'public');
         }
 
-        // file overwrite
+        // File replace
         if ($request->hasFile('file')) {
             $validated['file_path'] = $request->file('file')->store('scenario_files', 'public');
+        }
+
+        // Video replace
+        if ($request->hasFile('video')) {
+            $validated['video_path'] = $request->file('video')->store('scenario_videos', 'public');
+        }
+
+        // YouTube URL convert
+        if ($request->filled('video_url')) {
+            $validated['video_url'] = $this->convertYoutubeUrl($request->video_url);
         }
 
         $scenario->update($validated);

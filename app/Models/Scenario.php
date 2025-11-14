@@ -19,11 +19,13 @@ class Scenario extends Model
         'initial_metrics',
         'created_by',
 
-        // teacher uploads
+        // uploads
         'image_path',
         'file_path',
+        'video_path',
+        'video_url',
 
-        // open / closed + deadline
+        // status
         'status',
         'deadline',
     ];
@@ -33,27 +35,43 @@ class Scenario extends Model
         'deadline'        => 'datetime',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    // Created by teacher
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    // Student decisions
     public function decisions()
     {
         return $this->hasMany(Decision::class);
     }
 
-    /**
-     * Is this scenario open for student submissions?
-     */
+    // ⭐ NEW: Comments (discussion)
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scenario Open/Closed Logic
+    |--------------------------------------------------------------------------
+    */
     public function isOpenForSubmission(): bool
     {
-        // hard closed
+        // manually closed
         if ($this->status === 'closed') {
             return false;
         }
 
-        // deadline passed
+        // expired deadline
         if ($this->deadline instanceof Carbon && now()->greaterThan($this->deadline)) {
             return false;
         }

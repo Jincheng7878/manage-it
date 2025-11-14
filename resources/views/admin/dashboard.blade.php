@@ -150,7 +150,8 @@
                                             Scenario: {{ $decision->scenario->title ?? 'Unknown scenario' }}
                                         </div>
                                         <div class="text-xs text-gray-400 mt-1">
-                                            {{ $decision->created_at->diffForHumans() }}
+                                            {{ \Carbon\Carbon::parse($decision->created_at)->diffForHumans() }}
+
                                         </div>
                                     </div>
                                     <div class="text-right text-sm">

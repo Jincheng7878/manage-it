@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Route;
+@endphp
+
 <nav x-data="{ open: false }" class="bg-indigo-600 border-b border-indigo-700 text-white shadow">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,10 +40,10 @@
 
                     {{-- Analytics (admin only, yellow pill) --}}
                     @auth
-                        @if(Auth::user()->role === 'admin')
+                        @if(Auth::user()->role === 'admin' && Route::has('analytics'))
                             <x-nav-link
-                                :href="route('admin.analytics')"
-                                :active="request()->routeIs('admin.analytics')"
+                                :href="route('analytics')"
+                                :active="request()->routeIs('analytics')"
                                 class="font-semibold text-black bg-yellow-300 px-3 py-2 rounded-lg
                                        hover:bg-yellow-200 hover:text-gray-800 transition"
                             >
@@ -146,10 +150,10 @@
             </x-responsive-nav-link>
 
             @auth
-                @if(Auth::user()->role === 'admin')
+                @if(Auth::user()->role === 'admin' && Route::has('analytics'))
                     <x-responsive-nav-link
-                        :href="route('admin.analytics')"
-                        :active="request()->routeIs('admin.analytics')"
+                        :href="route('analytics')"
+                        :active="request()->routeIs('analytics')"
                         class="text-black bg-yellow-300 hover:bg-yellow-200 hover:text-gray-800 font-semibold"
                     >
                         Analytics

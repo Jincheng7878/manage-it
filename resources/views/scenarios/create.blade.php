@@ -16,9 +16,6 @@
                    value="{{ old('title') }}"
                    class="mt-1 block w-full border rounded p-2"
                    required>
-            @error('title')
-                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-            @enderror
         </div>
 
         <!-- Description -->
@@ -48,9 +45,9 @@
             <div>
                 <label class="block text-sm font-medium">Difficulty</label>
                 <select name="difficulty" class="mt-1 block w-full border rounded p-2">
-                    <option value="easy"   {{ old('difficulty') === 'easy' ? 'selected' : '' }}>Easy</option>
-                    <option value="medium" {{ old('difficulty', 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
-                    <option value="hard"   {{ old('difficulty') === 'hard' ? 'selected' : '' }}>Hard</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
                 </select>
             </div>
         </div>
@@ -60,23 +57,16 @@
             <div>
                 <label class="block text-sm font-medium">Status</label>
                 <select name="status" class="mt-1 block w-full border rounded p-2">
-                    <option value="open"   {{ old('status', 'open') === 'open' ? 'selected' : '' }}>Open</option>
-                    <option value="closed" {{ old('status') === 'closed' ? 'selected' : '' }}>Closed</option>
+                    <option value="open" selected>Open</option>
+                    <option value="closed">Closed</option>
                 </select>
-                <p class="text-xs text-gray-500 mt-1">
-                    If closed, students cannot submit new decisions.
-                </p>
             </div>
 
             <div>
                 <label class="block text-sm font-medium">Deadline (optional)</label>
                 <input type="datetime-local"
                        name="deadline"
-                       value="{{ old('deadline') }}"
                        class="mt-1 block w-full border rounded p-2">
-                <p class="text-xs text-gray-500 mt-1">
-                    After this date/time, submissions will be blocked automatically.
-                </p>
             </div>
         </div>
 
@@ -85,40 +75,55 @@
             <label class="block text-sm font-medium">Scenario Image (optional)</label>
             <input type="file"
                    name="image"
+                   accept="image/*"
                    class="mt-1 block w-full border rounded p-2">
-            <p class="text-xs text-gray-500 mt-1">
-                You can upload a relevant image (project site, diagram, etc.).
-            </p>
-            @error('image')
-                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-            @enderror
         </div>
 
         <!-- File Upload -->
-        <div class="mb-6">
+        <div class="mb-4">
             <label class="block text-sm font-medium">Attachment File (optional)</label>
             <input type="file"
                    name="file"
                    class="mt-1 block w-full border rounded p-2">
-            <p class="text-xs text-gray-500 mt-1">
-                For example, a PDF brief, Excel data, or additional documentation.
+        </div>
+
+        <!-- Video Upload -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Video File (optional)</label>
+            <input type="file"
+                   name="video"
+                   accept="video/mp4,video/webm,video/ogg"
+                   class="mt-1 block w-full border rounded p-2">
+            <p class="text-xs text-gray-500">
+                MP4 recommended (H.264 + AAC).
             </p>
-            @error('file')
+        </div>
+
+        <!-- Video URL (YouTube) -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium">Video URL (optional)</label>
+            <input type="text"
+                   name="video_url"
+                   value="{{ old('video_url') }}"
+                   class="mt-1 block w-full border rounded p-2"
+                   placeholder="https://youtu.be/xxxx or https://www.youtube.com/watch?v=xxxx">
+
+            @error('video_url')
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
         </div>
 
         <!-- Buttons -->
-        <div class="flex items-center gap-3">
+        <div class="flex gap-3">
             <button class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition">
                 Save
             </button>
-
             <a href="{{ route('scenarios.index') }}"
-               class="text-gray-600 hover:text-gray-800 transition">
-                Cancel
+               class="text-gray-600 hover:text-gray-800">
+               Cancel
             </a>
         </div>
+
     </form>
 </div>
 @endsection

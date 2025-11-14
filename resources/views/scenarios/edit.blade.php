@@ -109,7 +109,7 @@
         </div>
 
         <!-- File Upload -->
-        <div class="mb-6">
+        <div class="mb-4">
             <label class="block text-sm font-medium">Attachment File (optional)</label>
             <input type="file"
                    name="file"
@@ -125,6 +125,51 @@
                 </p>
             @endif
             @error('file')
+                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Video File -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Video File (optional)</label>
+            <input type="file"
+                   name="video"
+                   class="mt-1 block w-full border rounded p-2"
+                   accept="video/*">
+            @if($scenario->video_path)
+                <p class="text-xs text-gray-500 mt-1">
+                    Current video file:
+                    <a href="{{ asset('storage/' . $scenario->video_path) }}"
+                       target="_blank"
+                       class="underline text-indigo-600">
+                        Download / Open
+                    </a>
+                </p>
+            @endif
+            @error('video')
+                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Video URL -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium">Video URL (optional)</label>
+            <input type="text"
+                   name="video_url"
+                   value="{{ old('video_url', $scenario->video_url) }}"
+                   class="mt-1 block w-full border rounded p-2"
+                   placeholder="https://youtu.be/xxxx or https://www.youtube.com/watch?v=xxxx">
+            @if($scenario->video_url)
+                <p class="text-xs text-gray-500 mt-1">
+                    Current URL:
+                    <a href="{{ $scenario->video_url }}"
+                       target="_blank"
+                       class="underline text-indigo-600">
+                        Open
+                    </a>
+                </p>
+            @endif
+            @error('video_url')
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
         </div>

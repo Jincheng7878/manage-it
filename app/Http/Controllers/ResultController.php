@@ -15,7 +15,8 @@ class ResultController extends Controller
     }
 
     /**
-     * 老师查看所有结果 / 学生查看自己的结果
+     * Teacher: see all results
+     * Student: see own results (grades)
      */
     public function index()
     {
@@ -38,7 +39,23 @@ class ResultController extends Controller
     }
 
     /**
-     * 结果详情页面
+     * Student: "My Decisions" page
+     * (list all decisions created by this user)
+     */
+    public function myDecisions()
+    {
+        $user = auth()->user();
+
+        $decisions = Decision::where('user_id', $user->id)
+            ->with(['scenario', 'result'])
+            ->latest()
+            ->paginate(10);
+
+        return view('results.my_decisions', compact('decisions'));
+    }
+
+    /**
+     * Result detail page
      */
     public function show(Result $result)
     {
@@ -50,27 +67,21 @@ class ResultController extends Controller
     }
 
     /**
-     * ================
-     * 🔥 老师评分页面
-     * ================
+     * Teacher: grade page for one scenario
      */
     public function gradeList(Scenario $scenario)
     {
-        // 只有 admin 才能进入评分
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Only admin can grade.');
         }
 
-        // 获取学生提交的所有决策
         $scenario->load('decisions.user', 'decisions.result');
 
         return view('results.grade', compact('scenario'));
     }
 
     /**
-     * ================
-     * 🔥 老师提交评分
-     * ================
+     * Teacher: save grade for one decision
      */
     public function grade(Request $request, Decision $decision)
     {
@@ -80,20 +91,19 @@ class ResultController extends Controller
 
         $validated = $request->validate([
             'score'    => 'required|integer|min:0|max:100',
-            'feedback' => 'nullable|string|max:1000'
+            'feedback' => 'nullable|string|max:1000',
         ]);
 
-        // 如果该决策还没有 result，则创建一个
         $result = $decision->result ?? new Result();
         $result->decision_id = $decision->id;
         $result->score       = $validated['score'];
         $result->feedback    = $validated['feedback'];
         $result->save();
 
-        return back()->with('success', '评分已保存。');
+        return back()->with('success', 'Grade saved successfully.');
     }
 
-    // 不允许外部创建或删除 result
+    // Disable unused actions
     public function create()  { abort(404); }
     public function store(Request $r) { abort(404); }
     public function edit(Result $r) { abort(404); }

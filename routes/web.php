@@ -4,68 +4,96 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScenarioController;
 use App\Http\Controllers\DecisionController;
 use App\Http\Controllers\ResultController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
-| Home / Root
+| Landing
 |--------------------------------------------------------------------------
 */
-
-// Root → scenario list for everyone
 Route::get('/', function () {
-    return redirect()->route('scenarios.index');
+    return redirect()->route('login');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated routes (students + teachers)
+| Shared (Students + Teachers)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth'])->group(function () {
 
-    // ✅ Student / personal dashboard
-    Route::get('/dashboard', [StudentDashboardController::class, 'index'])
-        ->name('dashboard');
-
-    // Scenario CRUD
+    // -----------------------------
+    // Scenarios
+    // -----------------------------
     Route::resource('scenarios', ScenarioController::class);
 
-    // Decisions (student submissions)
-    Route::get('scenarios/{scenario}/decisions', [DecisionController::class, 'index'])
-        ->name('decisions.index');
+    Route::patch('/scenarios/{scenario}/toggle',
+        [ScenarioController::class, 'toggle']
+    )->name('scenarios.toggle');
 
-    Route::get('scenarios/{scenario}/decisions/create', [DecisionController::class, 'create'])
-        ->name('decisions.create');
+    // -----------------------------
+    // Decisions
+    // -----------------------------
+    Route::get('scenarios/{scenario}/decisions',
+        [DecisionController::class, 'index']
+    )->name('decisions.index');
 
-    Route::post('scenarios/{scenario}/decisions', [DecisionController::class, 'store'])
-        ->name('decisions.store');
+    Route::get('scenarios/{scenario}/decisions/create',
+        [DecisionController::class, 'create']
+    )->name('decisions.create');
 
-    // Delete decision (owner or admin, logic in controller)
-    Route::delete('decisions/{decision}', [DecisionController::class, 'destroy'])
-        ->name('decisions.destroy');
+    Route::post('scenarios/{scenario}/decisions',
+        [DecisionController::class, 'store']
+    )->name('decisions.store');
 
-    // Results: students see their own; teachers see all (handled in controller)
-    Route::resource('results', ResultController::class)->only(['index', 'show']);
+    Route::delete('/decisions/{decision}',
+        [DecisionController::class, 'destroy']
+    )->name('decisions.destroy');
+
+    // -----------------------------
+    // Results
+    // -----------------------------
+    Route::resource('results', ResultController::class)
+        ->only(['index', 'show']);
+
+    // My decisions
+    Route::get('/my-decisions',
+        [ResultController::class, 'myDecisions']
+    )->name('my.decisions');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ⭐ NEW: Comments Routes (评论区)
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/scenarios/{scenario}/comments',
+        [CommentController::class, 'store']
+    )->name('comments.store');
+
+    Route::delete('/comments/{comment}',
+        [CommentController::class, 'destroy']
+    )->name('comments.destroy');
 });
-
 
 /*
 |--------------------------------------------------------------------------
-| Admin-only routes (teachers)
+| Admin Only
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    // Admin analytics dashboard
-    Route::get('/admin/analytics', [AdminDashboardController::class, 'index'])
-        ->name('admin.analytics');
-
-    // Teacher grading
+    // grading
     Route::get('scenarios/{scenario}/grade',
         [ResultController::class, 'gradeList']
     )->name('results.gradeList');
@@ -73,13 +101,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('decisions/{decision}/grade',
         [ResultController::class, 'grade']
     )->name('results.grade');
+
+    // analytics
+    Route::get('/analytics',
+        [AnalyticsController::class, 'scoreOverview']
+    )->name('admin.analytics');
+
+    Route::get('/analytics/scores',
+        [AnalyticsController::class, 'scoreOverview']
+    )->name('analytics.scores');
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Breeze Auth routes
-|--------------------------------------------------------------------------
-*/
-
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

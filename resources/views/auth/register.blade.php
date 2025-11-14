@@ -1,64 +1,94 @@
 <x-guest-layout>
-    <div class="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
-        <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Register</h2>
 
-        {{-- 错误提示 --}}
-        @if ($errors->any())
-            <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-                <ul class="list-disc list-inside text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    <style>
+        body {
+            background: url('https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1920&q=80')
+                        no-repeat center center fixed;
+            background-size: cover;
+        }
+        .glass-card {
+            backdrop-filter: blur(18px);
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        .fade-in {
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
+    <div class="min-h-screen flex flex-col justify-center items-center px-6 fade-in">
 
-            {{-- Name --}}
-            <label class="block mb-2 text-gray-700 font-medium">Name</label>
-            <input type="text"
-                   name="name"
-                   value="{{ old('name') }}"
-                   required
-                   autofocus
-                   class="w-full border rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+        <h1 class="text-4xl font-extrabold text-white mb-8 drop-shadow-lg">
+            Create Your Account ✨
+        </h1>
 
-            {{-- Email --}}
-            <label class="block mb-2 text-gray-700 font-medium">Email</label>
-            <input type="email"
-                   name="email"
-                   value="{{ old('email') }}"
-                   required
-                   class="w-full border rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+        <div class="w-full max-w-md glass-card p-8">
 
-            {{-- Password --}}
-            <label class="block mb-2 text-gray-700 font-medium">Password</label>
-            <input type="password"
-                   name="password"
-                   required
-                   class="w-full border rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+            <!-- Validation Errors (Breeze Style) -->
+            <x-input-error :messages="$errors->all()" class="mb-4" />
 
-            {{-- Confirm Password --}}
-            <label class="block mb-2 text-gray-700 font-medium">Confirm Password</label>
-            <input type="password"
-                   name="password_confirmation"
-                   required
-                   class="w-full border rounded-lg p-3 mb-4 focus:ring-indigo-500 focus:border-indigo-500">
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
 
-            {{-- Register button --}}
-            <button type="submit"
-                    class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-500 transition">
-                Register
-            </button>
+                <!-- Name -->
+                <div class="mb-4">
+                    <label class="block text-gray-900 font-semibold">Name</label>
+                    <input id="name" type="text" name="name"
+                           value="{{ old('name') }}" required autofocus
+                           class="block mt-1 w-full rounded-md border-gray-300" />
+                </div>
 
-            {{-- Login link --}}
-            <div class="mt-4 text-right">
-                <a href="{{ route('login') }}" class="text-indigo-600 hover:underline text-sm">
-                    Already registered?
-                </a>
-            </div>
-        </form>
+                <!-- Email -->
+                <div class="mb-4">
+                    <label class="block text-gray-900 font-semibold">Email</label>
+                    <input id="email" type="email" name="email"
+                           value="{{ old('email') }}" required
+                           class="block mt-1 w-full rounded-md border-gray-300" />
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label class="block text-gray-900 font-semibold">Password</label>
+                    <input id="password" type="password" name="password" required
+                           class="block mt-1 w-full rounded-md border-gray-300" />
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-6">
+                    <label class="block text-gray-900 font-semibold">Confirm Password</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                           class="block mt-1 w-full rounded-md border-gray-300" />
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex items-center justify-between">
+
+                    <a class="underline text-gray-900 hover:text-gray-700"
+                       href="{{ route('login') }}">
+                        Already registered?
+                    </a>
+
+                    <button class="px-6 py-2 rounded-lg text-white font-semibold
+                                   bg-gradient-to-r from-indigo-500 to-purple-500
+                                   hover:from-indigo-400 hover:to-purple-400
+                                   transform hover:-translate-y-0.5 transition">
+                        Register
+                    </button>
+
+                </div>
+            </form>
+        </div>
+
+        <p class="mt-6 text-white">
+            Back to <a href="{{ route('login') }}" class="underline font-bold">Login</a>
+        </p>
+
     </div>
+
 </x-guest-layout>
