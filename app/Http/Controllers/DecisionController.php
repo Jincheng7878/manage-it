@@ -35,7 +35,7 @@ class DecisionController extends Controller
         return view('decisions.create', compact('scenario'));
     }
 
-    // Store student's decision
+    // Store student's decision + ⭐ XP 奖励
     public function store(Request $request, Scenario $scenario)
     {
         if (!$scenario->isOpenForSubmission()) {
@@ -71,11 +71,31 @@ class DecisionController extends Controller
             $validated['file_path'] = $request->file('file')->store('decision_files', 'public');
         }
 
-        Decision::create($validated);
+        // 创建决策
+        $decision = Decision::create($validated);
+
+        /* ==================================================
+         *  ⭐ NEW：提交成功后给学生增加 XP
+         *  规则：根据 scenario 的 difficulty 不同给不同 XP
+         *  easy   → 10 XP
+         *  medium → 20 XP
+         *  hard   → 30 XP
+         * ================================================== */
+        $user = auth()->user();
+
+        $xpGain = match ($scenario->difficulty) {
+            'easy'   => 10,
+            'medium' => 20,
+            'hard'   => 30,
+            default  => 15, // 如果将来多了新难度，给个默认值
+        };
+
+        // 增加经验值（users 表里已经有 xp 字段）
+        $user->increment('xp', $xpGain);
 
         return redirect()
             ->route('scenarios.show', $scenario)
-            ->with('success', 'Decision submitted. Please wait for teacher grading.');
+            ->with('success', "Decision submitted. You gained {$xpGain} XP. Please wait for teacher grading.");
     }
 
     // Delete decision (owner or admin)
